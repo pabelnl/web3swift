@@ -165,8 +165,11 @@ public final class InfuraWebsocketProvider: WebsocketProvider {
     }
     
     override public func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
-        if let data = text.data(using: String.Encoding.utf8),
-            let dictionary = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+        if let data = text.data(using: String.Encoding.utf8) {
+            guard let dictionary = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+                delegate.gotError(error: Web3Error.processingError(desc: "Can\'t get known result. Message is: \(text)"))
+                return
+            }
             if filterID == nil,
                 let result = dictionary["result"] as? String {
                 // setting filter id
